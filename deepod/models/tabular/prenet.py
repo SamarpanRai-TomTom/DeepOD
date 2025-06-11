@@ -178,41 +178,46 @@ class PReNetLoader:
     def __next__(self):
         self.counter += 1
         x1, x2, y = self.batch_generation()
-        x1, x2, y = torch.from_numpy(x1), torch.from_numpy(x2), torch.from_numpy(y)
-
+        
         if self.counter > self.steps_per_epoch:
             raise StopIteration
 
         return x1, x2, y
 
+    
     def batch_generation(self):
-        batch_x1 = []
-        batch_x2 = []
-        batch_y = []
-
-        # batch_x1 = np.empty([self.batch_size, self.dim])
-        # batch_x2 = np.empty([self.batch_size, self.dim])
-
+        # Preallocate PyTorch tensors for batches
+        batch_x1 = torch.empty((self.batch_size, self.dim), dtype=torch.float32)
+        batch_x2 = torch.empty((self.batch_size, self.dim), dtype=torch.float32)
+        batch_y = torch.empty((self.batch_size,), dtype=torch.int64)
+    
         for i in range(self.batch_size):
             if i % 4 == 0 or i % 4 == 1:
-                sid = np.random.choice(self.unlabeled_id, 2, replace=False)
-                batch_x1.append(self.X[sid[0]])
-                batch_x2.append(self.X[sid[1]])
-                batch_y.append(0)
+                # Sample two indices from unlabeled_id
+                sid = torch.tensor(
+                    np.random.choice(self.unlabeled_id, 2, replace=False), dtype=torch.int64
+                )
+                batch_x1[i] = torch.tensor(self.X[sid[0]], dtype=torch.float32)
+                batch_x2[i] = torch.tensor(self.X[sid[1]], dtype=torch.float32)
+                batch_y[i] = 0
             elif i % 4 == 2:
-                sid1 = np.random.choice(self.unlabeled_id, 1)
-                sid2 = np.random.choice(self.known_anom_id, 1)
-                batch_x1.append(self.X[sid1[0]])
-                batch_x2.append(self.X[sid2[0]])
-                batch_y.append(4)
+                # Sample one index from unlabeled_id and one from known_anom_id
+                sid1 = torch.tensor(
+                    np.random.choice(self.unlabeled_id, 1), dtype=torch.int64
+                )
+                sid2 = torch.tensor(
+                    np.random.choice(self.known_anom_id, 1), dtype=torch.int64
+                )
+                batch_x1[i] = torch.tensor(self.X[sid1[0]], dtype=torch.float32)
+                batch_x2[i] = torch.tensor(self.X[sid2[0]], dtype=torch.float32)
+                batch_y[i] = 4
             else:
-                sid = np.random.choice(self.known_anom_id, 2, replace=False)
-                batch_x1.append(self.X[sid[0]])
-                batch_x2.append(self.X[sid[1]])
-                batch_y.append(8)
-
-        batch_x1 = np.array(batch_x1)
-        batch_x2 = np.array(batch_x2)
-        batch_y = np.array(batch_y)
-
+                # Sample two indices from known_anom_id
+                sid = torch.tensor(
+                    np.random.choice(self.known_anom_id, 2, replace=False), dtype=torch.int64
+                )
+                batch_x1[i] = torch.tensor(self.X[sid[0]], dtype=torch.float32)
+                batch_x2[i] = torch.tensor(self.X[sid[1]], dtype=torch.float32)
+                batch_y[i] = 8
+    
         return batch_x1, batch_x2, batch_y
