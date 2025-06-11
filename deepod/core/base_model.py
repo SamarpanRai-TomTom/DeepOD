@@ -105,6 +105,7 @@ class BaseDeepAD(metaclass=ABCMeta):
 
         self.data_type = data_type
         self.network = network
+        print(f"Using device: {device}")
 
         # if data_type == 'ts':
         #     assert self.network in sequential_net_name, \
