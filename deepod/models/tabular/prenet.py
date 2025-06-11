@@ -24,7 +24,7 @@ class PReNet(BaseDeepAD):
             epoch_steps=epoch_steps, prt_steps=prt_steps, device=device,
             verbose=verbose, random_state=random_state
         )
-
+        print("Using device: {device}")
         self.hidden_dims = hidden_dims
         self.rep_dim = rep_dim
         self.act = act
